@@ -1,0 +1,125 @@
+# `lasgrav`: a simple raster image importer
+
+`lasgrav` is a program that takes a raster image (such as a PNG or JPEG) and
+generates a GCode toolpath for a laser engraver. And that's it.
+
+You can then feed the GCode output into the control software of your choice,
+such as Candle or LaserGRBL.
+
+## Example
+
+You will need to have Rust installed to build the program from source.
+
+To generate GCode for some image `foo.png`, check out this repository and run:
+
+```
+cargo run --release foo.png
+```
+
+This will use default settings that are probably wrong for your machine. You can
+get the command line help by running `cargo run -- --help` (those middle dashes
+are important).
+
+## Why this program exists
+
+I'm doing fairly complex fabrication that requires laser cutting and etching on
+the same piece. This means the following things are important to me:
+
+1. The coordinate system used for etching is well-defined and will match the one
+   used for cutting.
+2. Generation of toolpaths can be scripted.
+3. The toolpath does not needlessly lose precision given my target machine's
+   step size.
+4. The generation software does not gaslight me by claiming to successfully
+   import files when it actually ran out of memory and failed.
+5. A large (300 x 400 mm) piece can be engraved at high resolution (10-50
+   lines/mm) in a reasonable amount of time and RAM.
+
+I couldn't find an open source option that met all these criteria (and one
+popular one, which I won't name, didn't meet _any_ of them).
+
+## Options and configuration
+
+```
+Usage: lasgrav [OPTIONS] <IMAGE>
+
+Arguments:
+  <IMAGE>
+          
+
+Options:
+  -h, --help
+          Print help (see a summary with '-h')
+
+Import Options:
+  -d, --dpi <DPI>
+          Input file resolution specified in dots-per-inch. This determines the
+          transformation from the input sample grid to machine space. You can
+          alter this value to scale the image, if desired.
+          
+          This argument is in US conventional units, rather than SI, due to
+          industry convention.
+          
+          [default: 300]
+
+  -t, --threshold <THRESHOLD>
+          Pixel luminance level to treat as "white" or "off." Any pixel with this
+          value or greater (after the conversion to grayscale) will be treated as
+          "not engraved," and any pixel with this value or lower will be engraved
+          
+          [default: 128]
+
+  -i, --interp <INTERP>
+          Interpolation method to use when sampling image; only really matters if
+          the output lines don't exactly map to pixels
+          
+          [default: gaussian]
+          [possible values: nearest, gaussian, lanczos3, cubic]
+
+Output Options:
+  -l, --lines-per-mm <LINES_PER_MM>
+          Lines per mm in the output engraving
+          
+          [default: 8]
+
+  -f, --feed <FEED>
+          Feed rate, in mm/min
+          
+          [default: 1000]
+
+  -p, --power <POWER>
+          Laser power for "on" sections
+          
+          [default: 1000]
+
+  -m, --motion <MOTION>
+          Horizontal motion strategy. Generally bidirectional movement is
+          fastest, but if your machine has backlash on the X axis, unidirectional
+          movement may produce better output
+          
+          [default: bi]
+          [possible values: uni, bi]
+
+      --precision <PRECISION>
+          Force precision of numbers in GCode (decimal places of fractional
+          millimeters). By default this is computed from the machine step size.
+          You probably only want to override this to compare the output to
+          another generator with a specific precision setting
+
+      --quantize-horizontal
+          Decreases horizontal resolution to match the lines-per-mm setting.
+          Generally this is a bad idea. It's mostly useful to compare the output
+          to another generator that behaves this way
+
+Machine Options:
+  -s, --steps-per-mm <STEPS_PER_MM>
+          Steps per mm in the output machine. Currently this assumes that there
+          are an integral number of steps per millimeter
+          
+          [default: 160]
+
+Debugging Tools:
+      --save-intermediate <SAVE_INTERMEDIATE>
+          Path to write the intermediate processed image after thresholding, for
+          checking the results
+```
