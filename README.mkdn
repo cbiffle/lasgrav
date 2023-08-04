@@ -38,6 +38,36 @@ the same piece. This means the following things are important to me:
 I couldn't find an open source option that met all these criteria (and one
 popular one, which I won't name, didn't meet _any_ of them).
 
+## `lasgrav` coordinate system and model
+
+Currently, `lasgrav` only does horizontal engraving (i.e. the fast motion is
+over the machine's X axis). At the moment, if you'd like vertical engraving,
+rotate your input and workpiece or set up a translation at your machine.
+
+The output coordinate space is divided into a number of horizontal _lines_, the
+spacing of which is controlled by the `lines-per-mm` parameter. Specifically,
+each millimeter of extent along the Y axis is defined into that number of
+horizontal _strips._ The actual laser engraving will occur at the center of the
+strip. This means the output is offset by half a step compared to (say)
+LaserGRBL. This ensures that the output won't overlap a vector-cut border. (Most
+other tools do the engraving at the _bottom_ of each strip, applying an
+effective one-half pixel offset toward negative Y.)
+
+Currently, `lasgrav` only does bilevel engraving -- each pixel is either on
+(black) or off (white). `lasgrav` will threshold color and grayscale images
+internally (see the `threshold` parameter). If you want greater control, do the
+thresholding in your favorite image editor where you can apply channel mixing
+and curves and the like.
+
+Along the X axis, the workpiece is divided into steps that correspond to the
+pixels in the input image. Each pixel corresponds to a vertical strip, and an
+"on" pixel means that the laser is turned on all the way across that strip --
+from the leftmost boundary to the rightmost. (To force quantization along the X
+axis to match the lines/mm on the Y axis, see the `quantize-horizontally`
+parameter. Generally you get better output if you don't do this; LaserGRBL does
+this by default but doesn't appear to document it anywhere, so you can use this
+switch to more closely emulate its behavior.)
+
 ## Options and configuration
 
 ```
