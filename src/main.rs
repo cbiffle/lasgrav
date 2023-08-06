@@ -174,6 +174,8 @@ fn main() -> Result<()> {
     let sdp = 10_f64.powi(dp as i32);
     let round = |f: f64| (f * sdp).round() / sdp;
 
+    print!("G90\r\n");
+
     print!("G0 X0 Y0 F{}\r\n", args.feed);
     print!("M3 S0\r\n");
     let mm_per_line = 1. / args.lines_per_mm as f64;
