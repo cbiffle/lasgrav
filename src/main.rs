@@ -174,8 +174,8 @@ fn main() -> Result<()> {
     let sdp = 10_f64.powi(dp as i32);
     let round = |f: f64| (f * sdp).round() / sdp;
 
-    println!("G0 X0 Y0 F{}", args.feed);
-    println!("M3 S0");
+    print!("G0 X0 Y0 F{}\r\n", args.feed);
+    print!("M3 S0\r\n");
     let mm_per_line = 1. / args.lines_per_mm as f64;
     let half_line = mm_per_line / 2.;
     let mm_per_pixel = if args.quantize_horizontal {
@@ -196,18 +196,18 @@ fn main() -> Result<()> {
             spans.reverse();
         }
 
-        println!("( row {y}: {} )", if rtl { "<-" } else { "-> "});
+        print!("( row {y}: {} )\r\n", if rtl { "<-" } else { "-> "});
 
         let yc = round(y as f64 * mm_per_line + half_line);
         for (sx, ex) in spans {
             let sxc = round(sx as f64 * mm_per_pixel);
             let exc = round(ex as f64 * mm_per_pixel);
             if rtl {
-                println!("G0 X{exc} Y{yc} S0");
-                println!("G1 X{sxc} S{on}");
+                print!("G0 X{exc} Y{yc} S0\r\n");
+                print!("G1 X{sxc} S{on}\r\n");
             } else {
-                println!("G0 X{sxc} Y{yc} S0");
-                println!("G1 X{exc} S{on}");
+                print!("G0 X{sxc} Y{yc} S0\r\n");
+                print!("G1 X{exc} S{on}\r\n");
             }
         }
 
@@ -216,7 +216,7 @@ fn main() -> Result<()> {
         // rows correctly.
         odd = !odd;
     }
-    println!("M5");
+    print!("M5\r\n");
 
     Ok(())
 }
